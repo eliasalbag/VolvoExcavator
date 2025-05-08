@@ -1,0 +1,1 @@
+[robot,importInfo] = importrobot("SimExcavator")
