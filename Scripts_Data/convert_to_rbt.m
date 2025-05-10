@@ -1,1 +1,1 @@
-[robot,importInfo] = importrobot("SimExcavator")
+[simpleModel_rbt,importInfo] = importrobot("simpleModel")
