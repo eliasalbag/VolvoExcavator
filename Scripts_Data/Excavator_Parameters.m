@@ -22,11 +22,13 @@ Excavator_Param.Base.InnerWidth = Excavator_Param.Base.Width - 2*Excavator_Param
 Excavator_Param.Bom.Width = 200e-3;
 Excavator_Param.Bom.CutoutWidth = 25e-3;
 Excavator_Param.Bom.InnerWidth = Excavator_Param.Bom.Width - 2*Excavator_Param.Bom.CutoutWidth;
+Excavator_Param.Bom.Length = 1903.392e-3;
 
 %Stick
 Excavator_Param.Stick.Width = 150e-3;
 Excavator_Param.Stick.CutoutWidth = 25e-3;
 Excavator_Param.Stick.InnerWidth = Excavator_Param.Stick.Width - 2*Excavator_Param.Stick.CutoutWidth;
+Excavator_Param.Stick.Length = 1351.485e-3;
 
 %Linkage arms
 Excavator_Param.LinkageArm.Width = 30e-3;
@@ -40,7 +42,9 @@ Excavator_Param.LinkageArmLong.CutoutWidth = 25e-3;
 
 %Bucket
 Excavator_Param.Bucket.ThinWidth = 25e-3;
-
+Excavator_Param.Bucket.Length = 590.267e-3;
 
 Excavator_Param.Link.BucketTopRadius = 15e-3;
 Excavator_Param.Link.BucketTopLength = 2*(Excavator_Param.Bucket.ThinWidth) + (Excavator_Param.Stick.Width);
+
+
