@@ -1,18 +1,3 @@
-import cantools
-from canlib import canlib
-#from canlib import can
-
-# Ladda DBC
-db = cantools.database.load_file("ec20_sensors.dbc")
-# db = cantools.database.load_file("ec20_hydraulics.dbc")
-
-# Öppna Kvaser-kanal
-ch = canlib.openChannel(0, canlib.Open.EXCLUSIVE)
-ch.setBusOutputControl(canlib.Driver.NORMAL)
-ch.setBusParams(canlib.canBITRATE_500K)
-ch.busOn()
-status = ch.readStatus()
-print("Bus status:", status)
 
 """
 sensorer = []
@@ -22,32 +7,65 @@ for msg in db.messages:
     if msg.id 
     sensorer.append(Sensors(msg))
 """
+import cantools
+from canlib import canlib, Frame
+import time
 
-# BITRATE är 500kbitt5
-while True:
+
+def load_dbc_files():
+    dbc_sensors = cantools.database.load_file("ec20_sensors.dbc")
+    dbc_hydraulics = cantools.database.load_file("ec20_hydraulics.dbc")
+    return dbc_sensors, dbc_hydraulics
+
+
+def open_can_channel():
+    # Open Kvaser CAN channel
+    channel = canlib.openChannel(0, canlib.Open.EXCLUSIVE)
+    channel.setBusOutputControl(canlib.Driver.NORMAL)
+    channel.setBusParams(canlib.canBITRATE_500K)
+    channel.busOn()
+
+    print("CAN channel opened and bus is ON")
+    return channel
+
+
+def listen_can_messages(channel, dbc_sensors):
+    '''
+    Store sensor values (encoder values) in a dictionary
+    later ? Store spacemouse-inputs in a dictionary
+    '''
+    sensor_values = {}
+    spacemouse_inputs = {}
+
     try:
-        try:
-            frame = ch.read(timeout=4000)
-        except ch.CanBusOff:
-            print("BUS OFF → resetting channel…")
-            # Option A: simple reset in one call
-            ch.resetBus()                      # <- takes the channel off-bus then on-bus
-            # Option B: manual cycle if you prefer
-            # ch.busOff()
-            # time.sleep(0.2)
-            # ch.busOn()
-        try:
-            msg = db.decode_message(frame.id, frame.data)
-            print(f"ID={hex(frame.id)} → {msg}")
-            # print(frame)
-            #print("ID:", hex(frame.id))
-            #print("DATA (binärt):", " ".join(f"{b:08b}" for b in frame.data))
+        while True:
+            frame = channel.read(timeout=100)  # timeout in ms
+            try:
+                msg = dbc_sensors.get_message_by_frame_id(frame.id)
+                data = msg.decode(frame.data)
+                # Store all sensor values
+                for key, value in data.items():
+                    sensor_values[key] = value
 
-        except Exception:
-            print(f"Okänt meddelande: {frame}")
-        
+            except (KeyError, cantools.database.errors.DecodeError):
+                # Unknown message or decode error, skip
+                continue
     except KeyboardInterrupt:
-        print("\nAvbryter med Ctrl+C – stänger CAN...")
-        ch.busOff()
-        ch.close()
-        print("CAN stängd.")
+        print("Stopped listening to CAN messages.")
+
+    return sensor_values
+
+
+def main():
+    dbc_sensors, dbc_hydraulics = load_dbc_files() #ska vi ladda in alla 3 sensorerna separat här också?
+    channel = open_can_channel()
+
+    msg_hydraulics = dbc_hydraulics.get_message_by_name("ControlMessage")
+
+    listen_can_messages(channel, dbc_sensors)
+
+
+
+
+if __name__ == "__main__":
+    main()
