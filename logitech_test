@@ -1,28 +1,60 @@
-import pygame
-import time
+# fil: logitech_test.py
+from evdev import InputDevice, ecodes, list_devices
 
-pygame.init()
-pygame.joystick.init()
+TARGET_AXES = {ecodes.ABS_Y: "ABS_Y (left)", ecodes.ABS_RY: "ABS_RY (right)"}
 
-if pygame.joystick.get_count() == 0:
-    print("No controller found!")
-    exit()
+def pick_device():
+    paths = list_devices()
+    if not paths:
+        raise SystemExit("Ingen input-enhet hittades. Är handkontrollen inkopplad?")
+    # Försök hitta Logitech/gamepad
+    for p in paths:
+        d = InputDevice(p)
+        if "Logitech" in d.name or "Gamepad" in d.name or "Controller" in d.name:
+            return d
+    # Fallback: första enheten
+    return InputDevice(paths[0])
 
-joystick = pygame.joystick.Joystick(0)
-joystick.init()
-print("Detected:", joystick.get_name())
+def get_range(dev, code):
+    info = dev.absinfo(code)
+    if info:
+        return info.min, info.max
+    # fallback till typiskt intervall
+    return -32768, 32767
 
-while True:
-    pygame.event.pump()
-    lx = joystick.get_axis(0)
-    ly = joystick.get_axis(1)
-    rx = joystick.get_axis(3)
-    ry = joystick.get_axis(4)
+def to_percent(value, vmin, vmax):
+    center = (vmin + vmax) / 2.0
+    denom = max(abs(vmax - center), abs(vmin - center)) or 1
+    pct = ((value - center) / denom) * 100.0
+    pct = -pct
+    # kläm inom [-100, 100]
+    return max(-100.0, min(100.0, pct))
 
-    a = joystick.get_button(0)
-    b = joystick.get_button(1)
-    x = joystick.get_button(2)
-    y = joystick.get_button(3)
+def main():
+    gamepad = pick_device()
+    print(f"Läser från: {gamepad.path} – {gamepad.name}")
 
-    print(f"LX={lx:.2f}  LY={ly:.2f}  RX={rx:.2f}  RY={ry:.2f}  A={a}  B={b}")
-    time.sleep(0.1)
+    # skala för ABS_X och ABS_RY
+    min_y,  max_y  = get_range(gamepad, ecodes.ABS_Y)
+    min_ry, max_ry = get_range(gamepad, ecodes.ABS_RY)
+
+    try:
+        for event in gamepad.read_loop():
+            if event.type != ecodes.EV_ABS:
+                continue
+
+            if event.code == ecodes.ABS_Y:
+                pct = to_percent(event.value, min_y, max_y)
+                print(f"{TARGET_AXES[event.code]}: {pct:+.0f}%")
+
+            elif event.code == ecodes.ABS_RY:
+                pct = to_percent(event.value, min_ry, max_ry)
+                # Invertera om du vill att uppåt ska vara +:
+                # pct = -pct
+                print(f"{TARGET_AXES[event.code]}: {pct:+.0f}%")
+
+    except KeyboardInterrupt:
+        print("\nAvslutar…")
+
+if __name__ == "__main__":
+    main()
