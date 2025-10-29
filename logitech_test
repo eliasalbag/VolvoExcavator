@@ -1,60 +1,102 @@
-# fil: logitech_test.py
+# file: both_sticks_percent.py
 from evdev import InputDevice, ecodes, list_devices
+from select import select
+import sys, time
 
-TARGET_AXES = {ecodes.ABS_Y: "ABS_Y (left)", ecodes.ABS_RY: "ABS_RY (right)"}
+
+MODE = "manual"   # global variabel för körläget
+TARGET_AXES = (ecodes.ABS_Y, ecodes.ABS_RY)
 
 def pick_device():
-    paths = list_devices()
-    if not paths:
-        raise SystemExit("Ingen input-enhet hittades. Är handkontrollen inkopplad?")
-    # Försök hitta Logitech/gamepad
-    for p in paths:
+    for p in list_devices():
         d = InputDevice(p)
         if "Logitech" in d.name or "Gamepad" in d.name or "Controller" in d.name:
             return d
-    # Fallback: första enheten
+    paths = list_devices()
+    if not paths:
+        raise SystemExit("No input device found.")
     return InputDevice(paths[0])
 
 def get_range(dev, code):
     info = dev.absinfo(code)
     if info:
         return info.min, info.max
-    # fallback till typiskt intervall
-    return -32768, 32767
+    return -32768, 32767  # common fallback
 
 def to_percent(value, vmin, vmax):
     center = (vmin + vmax) / 2.0
-    denom = max(abs(vmax - center), abs(vmin - center)) or 1
+    denom  = max(abs(vmax - center), abs(vmin - center)) or 1
     pct = ((value - center) / denom) * 100.0
-    pct = -pct
-    # kläm inom [-100, 100]
-    return max(-100.0, min(100.0, pct))
+    if abs(pct) < 5.0:
+        return 0.0
+    pct = -pct # Invert
+    return max(-100.0, min(100.0, pct))  # clamp between -100 and 100, just return pct
 
 def main():
+    global MODE 
     gamepad = pick_device()
-    print(f"Läser från: {gamepad.path} – {gamepad.name}")
+    print(f"Reading: {gamepad.path} – {gamepad.name}")
 
-    # skala för ABS_X och ABS_RY
+    # ranges
     min_y,  max_y  = get_range(gamepad, ecodes.ABS_Y)
     min_ry, max_ry = get_range(gamepad, ecodes.ABS_RY)
 
+    # latest snapshot
+    ly = 0.0
+    ry = 0.0
+    lt = 0.0
+    rt = 0.0
+    
+    
+
+    # initial line
+    print(f"MODE: {MODE.upper()} | LY:  +0% | RY:  +0% | LT:  0% | RT:  0%", end="", flush=True)
+
     try:
-        for event in gamepad.read_loop():
-            if event.type != ecodes.EV_ABS:
-                continue
+        while True:
+            # Wait up to 20 ms for events; None if timeout
+            r, _, _ = select([gamepad], [], [], 0.02)
 
-            if event.code == ecodes.ABS_Y:
-                pct = to_percent(event.value, min_y, max_y)
-                print(f"{TARGET_AXES[event.code]}: {pct:+.0f}%")
+            if r:
+                # There are events ready; read all pending ones
+                for e in gamepad.read():
+                    
+                    # Toggle button for manual or automatic mode
+                    if e.type == ecodes.EV_KEY and e.code == ecodes.BTN_WEST and e.value == 1:
+                        if MODE == "manual":
+                            MODE = "automatic"  
+                        else:
+                            MODE = "manual"
+                    
+                    if e.type != ecodes.EV_ABS:
+                        continue
+                    if e.code == ecodes.ABS_Y:
+                        ly = to_percent(e.value, min_y, max_y)
+                    elif e.code == ecodes.ABS_RY:
+                        ry = to_percent(e.value, min_ry, max_ry)  # invert RY if desired
+                        
+                        
+                    elif e.type == ecodes.EV_ABS and e.code == ecodes.ABS_Z:     # LT
+                        lt = (e.value / 256.0) * 100.0
+                        
+                    elif e.type == ecodes.EV_ABS and e.code == ecodes.ABS_RZ:    # RT
+                        rt = (e.value / 256.0) * 100.0
+                        
 
-            elif event.code == ecodes.ABS_RY:
-                pct = to_percent(event.value, min_ry, max_ry)
-                # Invertera om du vill att uppåt ska vara +:
-                # pct = -pct
-                print(f"{TARGET_AXES[event.code]}: {pct:+.0f}%")
+
+
+                # update immediately after handling a batch
+                sys.stdout.write(f"\rMODE: {MODE.upper()} | LY: {ly:+.0f}% | RY: {ry:+.0f}% | LT: {lt:>3.0f}% | RT: {rt:>3.0f}%")
+                sys.stdout.flush()
+            else:
+                # No events this tick — still refresh the line (keeps UI snappy)
+                sys.stdout.write(f"\rMODE: {MODE.upper()} | LY: {ly:+.0f}% | RY: {ry:+.0f}% | LT: {lt:>3.0f}% | RT: {rt:>3.0f}%")
+                sys.stdout.flush()
+                # tiny sleep to keep CPU low (optional; select timeout already throttles)
+                time.sleep(0.001)
 
     except KeyboardInterrupt:
-        print("\nAvslutar…")
+        print("\nExiting…")
 
 if __name__ == "__main__":
     main()
