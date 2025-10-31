@@ -1,17 +1,42 @@
-
+import time
+from setup_CAN import *
+from sensors import *
+from kinematics import *
+from control import *
 
 def main():
-    # Setup
+    #open bus
+    channel = open_can_channel()
+
+    #load sensor data from dbc files
+    dbc_sensors, dbc_hydraulics = load_dbc_files()
+
+    #create signal objects
+    sensor_manager = create_signal_objects(dbc_sensors)
+
+    sampling_period = 0.01 # 10 ms = 100 Hz
+    last_time = time.monotonic()
 
     while True:
-        # Read sensor data
+        now = time.monotonic()
+        #read sensors
+        listen_can_messages(channel, dbc_sensors, sensor_manager, now)
 
-        # Analyze sensor data
+        if now - last_time >= sampling_period:
+            last_time = now
 
-        # Kinematics
-        x = f()
+            # Returns fused sensor data at specified time (latest)
+            sensor_data = fuse_sensors(sensor_manager,now)
+            
+            # Kinematics
+            ref = kinematics()
 
-        # Calculcate control signal
+            # Calculate control signal
+            control_signal = control(ref, sensor_data)
 
-        # Send control signal
+            # Send control signal
+            safe_control = safety_check(control_signal)
+            send_control(safe_control)
 
+#TODO: säker kod! om nått går fel typ listen to can ger felmeddelande eller tar för lång tid så måste skopan stanna. Kanske enklast att få till genom att använda threads så att man kan sätta säkerhet som högst prio?
+#TODO: plots to show angles and bucket tip position. Also good to be able to compare plots when we use different sampling time, velocities.
