@@ -1,35 +1,39 @@
 from collections import deque
+import cantools
 
-#ett objekt är en signal dvs ett unikt ID
 class Encoder():
-    def __init__(self, name, maxlen = 10):
+    def __init__(self, name):
         self.name = name
-        self.position = deque(maxlen=maxlen)
-        self.vel = deque(maxlen=maxlen)
-        self.timestamps = deque(maxlen=maxlen)
+        self.position = []
+        self.vel = []
+        self.timestamps = []
 
     def new_data(self, data, ts=None):
         self.position.append(data["SnsrPos_20"])
+        self.timestamps.append(ts)
+        self.velocity_encoder(ts)
 
     #calculate velocity for rotary encoder
     def velocity_encoder(self, time):
         if len(self.position) < 2:
-            return 0
-        dt = self.timestamps[-1] - self.timestamps[-2] #if dt = 0?
-        dp = self.position[-1] - self.position[-2]
-        return dp / dt
-    
+            self.vel.append(0)
+        else:
+            dt = self.timestamps[-1] - self.timestamps[-2] #if dt = 0?
+            dp = self.position[-1] - self.position[-2]
+            self.vel.append(dp / dt)
+        
 class IMU():
-    def __init__(self, name, maxlen = 10):
+    def __init__(self, name):
         self.name = name
+        self.signals = {}
         
         for axis in ["X", "Y", "Z"]:
-            self.signals[f"Angle{axis}{self.name[4:]}"] = deque(maxlen=maxlen)
-            self.signals[f"AngularVelocity{axis}{self.name[4:]}"] = deque(maxlen=maxlen)
-            self.signals[f"AngularAcceleration{axis}{self.name[4:]}"] = deque(maxlen=maxlen)
+            self.signals[f"Angle{axis}{self.name[5:]}"] = []
+            self.signals[f"AngularVelocity{axis}{self.name[5:]}"] = []
+            self.signals[f"AngularAcceleration{axis}{self.name[5:]}"] = []
         self.position = None
         self.vel = None
-        self.timestamps = deque(maxlen=maxlen)
+        self.timestamps = []
 
     def new_data(self, data, ts=None):
         for sig_name, value in data.items():
@@ -49,6 +53,21 @@ class IMU():
 # Sensorfusion vid given tidpunkt
 def fuse_sensors(sensor_manager, ts):
     return None
+
+def load_dbc_files():
+    dbc_sensors = cantools.database.load_file("ec20_sensors.dbc")
+    dbc_hydraulics = cantools.database.load_file("ec20_hydraulics.dbc")
+    return dbc_sensors, dbc_hydraulics
+
+def create_sensor_objects(dbc_sensors):
+    sensor_manager = {}
+    for msg in dbc_sensors.messages:
+        if msg.name not in sensor_manager.keys():
+            if "IMU" in msg.name:
+                sensor_manager[msg.name] = IMU(msg.name)
+            else:
+                sensor_manager[msg.name] = Encoder(msg.name)
+    return sensor_manager
     
 #ibland kommer inte sensordata som man tror, då viktigt att använda senaste värde eller interpolera.
 # om tid för gammal, ta bort i fusion och flagga!

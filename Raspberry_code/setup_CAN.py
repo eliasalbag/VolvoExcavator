@@ -2,22 +2,6 @@ import cantools
 from canlib import canlib, Frame
 from sensors import *
 
-def load_dbc_files():
-    dbc_sensors = cantools.database.load_file("ec20_sensors.dbc")
-    dbc_hydraulics = cantools.database.load_file("ec20_hydraulics.dbc")
-    return dbc_sensors, dbc_hydraulics
-
-def create_sensor_objects(dbc_sensors):
-    sensor_manager = {}
-    for msg in dbc_sensors.messages:
-        if msg.name not in sensor_manager.keys():
-            if "IMU" in msg.name:
-                sensor_manager[msg.name] = IMU(msg.name)
-            else:
-                sensor_manager[msg.name] = Encoder(msg.name)
-    return sensor_manager
-
-
 def open_can_channel():
     channel = canlib.openChannel(0, canlib.Open.EXCLUSIVE)
     channel.setBusOutputControl(canlib.Driver.NORMAL)
