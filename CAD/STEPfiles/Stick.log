@@ -1,0 +1,43 @@
+STEP translation to Solid Edge
+Date: måndag,oktober 13,2025 02:51
+Source File: C:\Users\Viktor Traktor\Downloads\VolvoExcavator\CAD\STEPfiles\Stick.stp
+Author: elias
+Organization: Unknown
+Source System: Autodesk Inventor 2026
+
+Hardware:
+Processor: Intel(R) Core(TM) i9-9900K CPU @ 3.60GHz
+Operating System: Windows 10 Professional Version:22H2 Build:19045 System Type:64-bit
+Installed Memory: 31.79 GB
+
+Software Information
+Parasolid Version: 37.0.118
+PSBodyShop Version: 37.0.94
+Step Adapter Version: 15.0.142
+Solid Edge Version: 225.00.00.114 x64
+
+Step Import Options
+Import Faceted Bodies: On
+Import Check Bodies: Off
+Import Curves: On
+Import DoNotSave: On
+Import Multiple Bodies As Single Part File: On
+Import Optimize:Off
+Import Stitch Surfaces: On
+Import Boolean Solids: On
+Make Base Feature: On
+Simplify Geometry: On
+Import Imprint Curves: On
+Import Drive: C:
+Import Stitch Surfaces: On
+Import Surfaces: On
+Import Output Path: C:\Users\Viktor Traktor\Downloads\VolvoExcavator\CAD\STEPfiles
+Import Enable Default Output Path: On
+Import PMI: Off
+Import As Internal Components: Off
+Import Path: 
+
+Translating to Parasolid data types...
+Placing C:\Users\Viktor Traktor\Downloads\VolvoExcavator\CAD\STEPfiles\Sticka.par
+Translation process completed
+Total time required to translate and post process:00 : 00 : 01
