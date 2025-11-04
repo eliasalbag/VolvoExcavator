@@ -26,11 +26,10 @@ class IMU():
     def __init__(self, name):
         self.name = name
         self.signals = {}
-        
-        for axis in ["X", "Y", "Z"]:
-            self.signals[f"Angle{axis}{self.name[5:]}"] = []
-            self.signals[f"AngularVelocity{axis}{self.name[5:]}"] = []
-            self.signals[f"AngularAcceleration{axis}{self.name[5:]}"] = []
+        self.signals[f"Angle{self.name[4:]}"] = []
+        self.signals[f"AngularVelocity{self.name[4:]}"] = []
+        self.signals[f"AngularAcceleration{self.name[4:]}"] = []
+
         self.position = None
         self.vel = None
         self.timestamps = []
@@ -41,14 +40,20 @@ class IMU():
                 self.signals[sig_name].append(value)
         self.timestamps.append(ts)
     
-    #calculate velocity and position for IMU (based of X and Y values?)
-    def IMU_to_joint_converter(self):
-        #IMUerna sitter ju inte direkt på en led så deras position och hastighet måste konverteras till position och hastighet i led.
-        #Man kan ju ra rotationerna på närliggande IMUS minus varandra, men vet inte om det bara ger approximation om det är mycket drift och brus??
-        #Man jobbar ju sig utåt från hytten så känns som att det kan bli väldigt brusigt vid skopan?
-        self.position = None
-        self.vel = None
+#calculate velocity and position for IMU (based of X and Y values?)
+def IMU_to_joint_converter(sensor_manager):
+    # 128 hytt, 137 bom, 138 arm 139 skopa
+    joint1_pos = sensor_manager["IMU_XAxis_137"].signals["AngleXAxis_137"][-1] - sensor_manager["IMU_XAxis_128"].signals["AngleXAxis_128"][-1]
+    joint1_vel = sensor_manager["IMU_XAxis_137"].signals["AngularVelocityXAxis_137"][-1] - sensor_manager["IMU_XAxis_128"].signals["AngularVelocityXAxis_128"][-1]
 
+    joint2_pos = sensor_manager["IMU_XAxis_138"].signals["AngleXAxis_138"][-1] - joint1_pos
+    joint2_vel = sensor_manager["IMU_XAxis_138"].signals["AngularVelocityXAxis_138"][-1] - joint1_pos
+
+    joint3_pos = sensor_manager["IMU_XAxis_139"].signals["AngleXAxis_139"][-1] - joint2_pos
+    joint3_vel = sensor_manager["IMU_XAxis_139"].signals["AngularVelocityXAxis_139"][-1] - joint2_pos
+
+    IMU_joints = [[joint1_pos, joint1_vel],[joint2_pos, joint2_vel],[joint3_pos, joint3_vel]]
+    return IMU_joints
 
 # Sensorfusion vid given tidpunkt
 def fuse_sensors(sensor_manager, ts):
