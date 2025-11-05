@@ -30,3 +30,16 @@ theta_b = rad2deg(acos(numB/denB)) - theta_hbc - theta_abg
 % calculation of thetaC
 %inåt motsvarar mindre sensorutslag
 theta_c = -(theta_a + theta_b) - 180
+
+newTheta_a = 32.746
+
+LB = 1876 *10^-3;
+LN = 762 *10^-3;
+L_BN = 1180 * 10^-3;
+theta_NB_vertical = rad2deg(acos((LB-LN)/L_BN))
+newtheta_b = -(180-(90-newTheta_a + theta_NB_vertical))
+
+Length_floor_CD = 361 *10^-3;
+Height_C = 596 *10^-3;
+Height_tip = 78*10^-3;
+newtheta_c = -(theta_NB_vertical + rad2deg(atan(Length_floor_CD/(Height_C - Height_tip))))
