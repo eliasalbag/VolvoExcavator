@@ -41,8 +41,7 @@ def main():
                 
             #vilka vinklar ska in i regleringen??
             #måste de kalibreras från början?
-            #kalibrera sensorer?
-                
+            #kalibrera sensorer?     
 
             break
 

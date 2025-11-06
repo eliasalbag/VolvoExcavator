@@ -9,6 +9,7 @@ class Encoder():
         self.timestamps = []
 
     def new_data(self, data, ts=None):
+        #ta med offset
         self.position.append(data["SnsrPos_20"])
         self.timestamps.append(ts)
         self.velocity_encoder(ts)
@@ -40,24 +41,34 @@ class IMU():
                 self.signals[sig_name].append(value)
         self.timestamps.append(ts)
     
-#calculate velocity and position for IMU (based of X and Y values?)
+
 def IMU_to_joint_converter(sensor_manager):
     # 128 hytt, 137 bom, 138 arm 139 skopa
-    joint1_pos = sensor_manager["IMU_XAxis_137"].signals["AngleXAxis_137"][-1] - sensor_manager["IMU_XAxis_128"].signals["AngleXAxis_128"][-1]
+    joint1_pos = sensor_manager["IMU_XAxis_137"].signals["AngleXAxis_137"][-1] - sensor_manager["IMU_XAxis_128"].signals["AngleXAxis_128"][-1] - sensor_manager[encoder["Rot_01"]].position[0]
     joint1_vel = sensor_manager["IMU_XAxis_137"].signals["AngularVelocityXAxis_137"][-1] - sensor_manager["IMU_XAxis_128"].signals["AngularVelocityXAxis_128"][-1]
 
-    joint2_pos = sensor_manager["IMU_XAxis_138"].signals["AngleXAxis_138"][-1] - joint1_pos
-    joint2_vel = sensor_manager["IMU_XAxis_138"].signals["AngularVelocityXAxis_138"][-1] - joint1_pos
+    joint2_pos = 360 - joint1_pos -(90 - sensor_manager["IMU_XAxis_138"].signals["AngleXAxis_138"][-1])
+    joint2_vel = sensor_manager["IMU_XAxis_138"].signals["AngularVelocityXAxis_138"][-1] - joint1_vel
 
-    joint3_pos = sensor_manager["IMU_XAxis_139"].signals["AngleXAxis_139"][-1] - joint2_pos
-    joint3_vel = sensor_manager["IMU_XAxis_139"].signals["AngularVelocityXAxis_139"][-1] - joint2_pos
+    joint3_pos = 0
+    joint3_vel = sensor_manager["IMU_XAxis_138"].signals["AngularVelocityXAxis_138"][-1] - joint2_vel
 
     IMU_joints = [[joint1_pos, joint1_vel],[joint2_pos, joint2_vel],[joint3_pos, joint3_vel]]
     return IMU_joints
 
 # Sensorfusion vid given tidpunkt
-def fuse_sensors(sensor_manager, ts):
-    return None
+def fuse_sensors(sensor_manager, IMU_joints, ts):
+
+    joint1_pos = (IMU_joints[0][0] + sensor_manager[encoder["Rot_33"]].position[-1])/2
+    joint1_vel = (IMU_joints[0][1] + sensor_manager[encoder["Rot_33"]].vel[-1])/2
+
+    joint2_pos = (IMU_joints[1][0] + sensor_manager[encoder["Rot_20"]].position[-1])/2
+    joint2_vel = (IMU_joints[1][1] + sensor_manager[encoder["Rot_20"]].vel[-1])/2
+
+    joint3_pos = encoder["Rot_01"].position[-1]
+    joint3_pos = encoder["Rot_01"].vel[-1]
+
+    return [joint1_pos, joint1_vel],[joint2_pos, joint2_vel],[joint3_pos, joint3_vel]
 
 def load_dbc_files():
     dbc_sensors = cantools.database.load_file("ec20_sensors.dbc")
