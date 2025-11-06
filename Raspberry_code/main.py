@@ -27,6 +27,11 @@ def main():
             last_time = now
 
             IMU_joints = IMU_to_joint_converter(sensor_manager)
+
+            # get angle values
+            fuse_sensors(sensor_manager, IMU_joints, now)
+
+            """
             encoder = ["Rot_01", "Rot_20", "Rot_33"]
             for i in range(3):
                 print(f"--- Joint {i+1} ---")
@@ -34,16 +39,11 @@ def main():
                 print(f"IMU velocity: {IMU_joints[i][1]}")
                 print(f"Encoder position: {sensor_manager[encoder[i]].position[-1]}")
                 print(f"Encoder velocity: {sensor_manager[encoder[i]].vel[-1]}")
+                print(f"Fused position: {fuse_sensors[i][0]")
+                print(f"Fused velocity: {fuse_sensors[i][1]")
                 print() 
-            #använd för att justera så att IMU och encoder är samma?
-            #IMU får vinkel från början
-            #Encoders måste positioneras korrekt eller hur vet man absoluta positionen?
-                
-            #vilka vinklar ska in i regleringen??
-            #måste de kalibreras från början?
-            #kalibrera sensorer?     
-
             break
+            """
 
             #läs av joystick
 
