@@ -14,6 +14,8 @@ def main_sim():
     sampling_period = 0.01 # 10 ms = 100 Hz
     last_time = time.monotonic()
 
+    kalman_filter = KalmanFilter(sampling_period)
+
     sampling_period = 0.01  # 100 Hz
     for i in range(3):  # exempel med 5 sekunder data
         ts = time.monotonic()
@@ -36,6 +38,11 @@ def main_sim():
         sensor_manager["Rot_33"].new_data(encoder_data, ts)
 
         IMU_joints = IMU_to_joint_converter(sensor_manager)
+        IMU_joints = IMU_to_joint_converter(sensor_manager)
+
+        # get angle values
+        fused = fuse_sensors(sensor_manager, IMU_joints, kalman_filter, ts)
+
         encoder = ["Rot_01", "Rot_20", "Rot_33"]
         for i in range(3):  
             print(f"--- Joint {i+1} ---")
@@ -43,6 +50,8 @@ def main_sim():
             print(f"IMU velocity: {IMU_joints[i][1]}")
             print(f"Encoder position: {sensor_manager[encoder[i]].position[-1]}")
             print(f"Encoder velocity: {sensor_manager[encoder[i]].vel[-1]}")
+            print(f"Fused position: {fused[i][0]}")
+            print(f"Fused velocity: {fused[i][1]}")
             print() 
         time.sleep(sampling_period)
         now = time.monotonic()

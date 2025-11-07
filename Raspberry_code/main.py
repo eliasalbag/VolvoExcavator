@@ -18,19 +18,23 @@ def main():
     sampling_period = 0.01 # 10 ms = 100 Hz
     last_time = time.monotonic()
 
+    kalman_filter = KalmanFilter(sampling_period)
+
     while True:
         now = time.monotonic()
         #read sensors
         listen_can_messages(channel, dbc_sensors, sensor_manager, now)
 
         if now - last_time >= sampling_period:
+            dt = now - last_time
             last_time = now
 
             IMU_joints = IMU_to_joint_converter(sensor_manager)
 
             # get angle values
-            fuse_sensors(sensor_manager, IMU_joints, now)
+            fuse_sensors(sensor_manager, IMU_joints, kalman_filter)
 
+            """
             encoder = ["Rot_01", "Rot_20", "Rot_33"]
             for i in range(3):
                 print(f"--- Joint {i+1} ---")
@@ -40,6 +44,7 @@ def main():
                 print(f"Encoder velocity: {sensor_manager[encoder[i]].vel[-1]}")
                 print() 
             break
+            """
 
             #läs av joystick
 
