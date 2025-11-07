@@ -1,9 +1,9 @@
 import time
 from setup_CAN import *
 from sensors import *
-from kinematics import *
-from partial_bucket_PID_control import *
-from plot import *
+#from kinematics import *
+#from partial_bucket_PID_control import *
+#from plot import *
 
 def main():
     #open bus
@@ -31,7 +31,6 @@ def main():
             # get angle values
             fuse_sensors(sensor_manager, IMU_joints, now)
 
-            """
             encoder = ["Rot_01", "Rot_20", "Rot_33"]
             for i in range(3):
                 print(f"--- Joint {i+1} ---")
@@ -39,11 +38,8 @@ def main():
                 print(f"IMU velocity: {IMU_joints[i][1]}")
                 print(f"Encoder position: {sensor_manager[encoder[i]].position[-1]}")
                 print(f"Encoder velocity: {sensor_manager[encoder[i]].vel[-1]}")
-                print(f"Fused position: {fuse_sensors[i][0]")
-                print(f"Fused velocity: {fuse_sensors[i][1]")
                 print() 
             break
-            """
 
             #läs av joystick
 

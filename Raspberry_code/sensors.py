@@ -43,8 +43,8 @@ class IMU():
     
 
 def IMU_to_joint_converter(sensor_manager):
-    # 128 hytt, 137 bom, 138 arm 139 skopa
-    joint1_pos = sensor_manager["IMU_XAxis_137"].signals["AngleXAxis_137"][-1] - sensor_manager["IMU_XAxis_128"].signals["AngleXAxis_128"][-1] - sensor_manager[encoder["Rot_01"]].position[0]
+    #128 hytt, 137 bom, 138 arm, 139 skopa
+    joint1_pos = sensor_manager["IMU_XAxis_137"].signals["AngleXAxis_137"][-1] - sensor_manager["IMU_XAxis_128"].signals["AngleXAxis_128"][-1] - sensor_manager["Rot_01"].position[0]
     joint1_vel = sensor_manager["IMU_XAxis_137"].signals["AngularVelocityXAxis_137"][-1] - sensor_manager["IMU_XAxis_128"].signals["AngularVelocityXAxis_128"][-1]
 
     joint2_pos = 360 - joint1_pos -(90 - sensor_manager["IMU_XAxis_138"].signals["AngleXAxis_138"][-1])
@@ -58,7 +58,6 @@ def IMU_to_joint_converter(sensor_manager):
 
 # Sensorfusion vid given tidpunkt
 def fuse_sensors(sensor_manager, IMU_joints, ts):
-
     joint1_pos = (IMU_joints[0][0] + sensor_manager[encoder["Rot_33"]].position[-1])/2
     joint1_vel = (IMU_joints[0][1] + sensor_manager[encoder["Rot_33"]].vel[-1])/2
 
