@@ -8,10 +8,10 @@ class Encoder():
         self.position = []
         self.vel = []
         self.timestamps = []
-        self.offset = {"Rot_01": 30.5,"Rot_20": 30.5, "Rot_30": 30.5 }
+        self.offset = {"Rot_01": 2.060410383456638e+02,"Rot_20": 2.390501084826040e+02, "Rot_33": 2.052407368979854e+02 }
 
     def new_data(self, data, ts=None):
-        self.position.append(data["SnsrPos"+self.name[-3:]])
+        self.position.append(data["SnsrPos"+self.name[-3:]]-self.offset[self.name])
         self.timestamps.append(ts)
         self.velocity_encoder(ts)
 
