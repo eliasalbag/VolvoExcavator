@@ -8,10 +8,10 @@
 
 load("systemIdentificationVolvo/bomRunTimeSeries.mat")
 
-assert(exist('out.bomPos.Data','var')==1 && exist('out.stickPos.Data','var')==1, 'Missing th1_raw/th2_raw');
-assert(exist('out.bomInput.Data','var')==1   && exist('out.stickInput.Data','var')==1, 'Missing u1_raw/u2_raw');
-assert(exist('out.bomPos.TimeInfo.Increment','var')==1, 'Missing Ts_y (output sample time)');
-assert(exist('out.bomInput.TimeInfo.Increment','var')==1, 'Missing Ts_u (input sample time)');
+% assert(exist('out.bomPos.Data','var')==1 && exist('out.stickPos.Data','var')==1, 'Missing th1_raw/th2_raw');
+% assert(exist('out.bomInput.Data','var')==1   && exist('out.stickInput.Data','var')==1, 'Missing u1_raw/u2_raw');
+% assert(exist('out.bomPos.TimeInfo.Increment','var')==1, 'Missing Ts_y (output sample time)');
+% assert(exist('out.bomInput.TimeInfo.Increment','var')==1, 'Missing Ts_u (input sample time)');
 
 % Optional: pick resampling method for inputs: 'zoh' or 'linear'
 RESAMPLE_METHOD = 'zoh';   % zero-order hold (recommended for valve voltages)
@@ -26,6 +26,9 @@ th1_raw = out.bomPos.Data(:);
 th2_raw = out.stickPos.Data(:);
 u1_raw  = out.bomInput.Data(:);
 u2_raw  = out.stickInput.Data(:);
+
+Ts_y = out.bomPos.TimeInfo.Increment;  % Output sample time
+Ts_u = out.bomInput.TimeInfo.Increment; % Input sample time
 
 N_y = numel(th1_raw);
 assert(numel(th2_raw)==N_y, 'th1_raw and th2_raw must have equal length');
@@ -107,28 +110,35 @@ nk = nk_samp * ones(2, nu_aug);
 
 orders = {na, nb, nk};
 
-%% 5) Choose nonlinear mappings (per output) and estimate
-nl1 = sigmoidnet('NumberOfUnits', 24);
-nl2 = sigmoidnet('NumberOfUnits', 24);
-nl  = {nl1, nl2};
+%% 4b) (Optional but recommended) lighten nb taps for engineered features
+% Keep 2 taps for real inputs u1,u2; 1 tap for features (sin/cos/dth/|u|)
+% nu_aug = size(u_aug,2); % should already exist
+nu_aug = size(u_aug,2);                 % already defined
+nb_row  = [2 2  ones(1, nu_aug-2)];     % 2 taps for u1,u2; 1 for engineered features
+nb      = [nb_row; nb_row];
+orders  = {na, nb, nk};
 
-opt = nlarxOptions('InitialCondition','estimate', ...
-                   'Focus','simulation', ...
-                   'Display','on');
+%% 5) Choose ONE nonlinear mapping (shared by both outputs) and estimate
+nl = idSigmoidNetwork('NumberOfUnits', 24);
 
 fprintf('Estimating NLARX (this can take a bit for larger datasets)...\n');
-sys = nlarx(id, orders, nl, opt);
+sys = nlarx(id, 'na', na, 'nb', nb, 'nk', nk, 'OutputFcn', nl, ...
+            'Focus','simulation', 'Display','on');
+
 
 %% 6) Validation: 1-step prediction vs free-run simulation
 % 1-step prediction on validation set
+% 1-step prediction
 yp1 = predict(sys, val, 1);
 [~, fit_pred] = compare(val, yp1);
-title('Validation: 1-step prediction')
 
-% Free-run simulation on validation set (harder, more realistic)
+% Free-run simulation
 ys = sim(sys, val.u);
 [~, fit_sim] = compare(val, ys);
-title('Validation: free-run simulation')
+
+fprintf('\n=== Validation metrics (NRMSE %% per output) ===\n');
+fprintf('Prediction (1-step):  y1=%5.1f %%   y2=%5.1f %%\n', fit_pred(1), fit_pred(2));
+fprintf('Simulation (free):    y1=%5.1f %%   y2=%5.1f %%\n', fit_sim(1),  fit_sim(2));
 
 % Residual checks (should look white and input-independent)
 figure; resid(val, sys);
