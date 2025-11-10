@@ -8,10 +8,10 @@ class Encoder():
         self.position = []
         self.vel = []
         self.timestamps = []
+        self.offset = {"Rot_01": 30.5,"Rot_20": 30.5, "Rot_30": 30.5 }
 
     def new_data(self, data, ts=None):
-        #ta med offset
-        self.position.append(data["SnsrPos_20"])
+        self.position.append(data["SnsrPos"+self.name[-3:]])
         self.timestamps.append(ts)
         self.velocity_encoder(ts)
 
@@ -123,14 +123,14 @@ def fuse_sensors(sensor_manager, IMU_joints, kf, ts):
 def IMU_to_joint_converter(sensor_manager):
     if sensor_manager["IMU_XAxis_128"].timestamps[-1] and sensor_manager["IMU_XAxis_137"].timestamps[-1] and sensor_manager["IMU_XAxis_138"].timestamps[-1] and sensor_manager["IMU_XAxis_139"].timestamps[-1]:#kontrollera att alla IMUer har godkända tidsstämplar.
         #128 hytt, 137 bom, 138 arm, 139 skopa
-        joint1_pos = sensor_manager["IMU_XAxis_137"].signals["AngleXAxis_137"][-1] - sensor_manager["IMU_XAxis_128"].signals["AngleXAxis_128"][-1] - sensor_manager["Rot_01"].position[0]
+        joint1_pos = sensor_manager["IMU_XAxis_137"].signals["AngleXAxis_137"][-1] - sensor_manager["IMU_XAxis_128"].signals["AngleXAxis_128"][-1] - (sensor_manager["IMU_XAxis_128"].signals["AngleXAxis_128"][0]-sensor_manager["Rot_01"].position[0])
         joint1_vel = sensor_manager["IMU_XAxis_137"].signals["AngularVelocityXAxis_137"][-1] - sensor_manager["IMU_XAxis_128"].signals["AngularVelocityXAxis_128"][-1]
 
         joint2_pos = 360 - joint1_pos -(90 - sensor_manager["IMU_XAxis_138"].signals["AngleXAxis_138"][-1])
         joint2_vel = sensor_manager["IMU_XAxis_138"].signals["AngularVelocityXAxis_138"][-1] - joint1_vel
 
-        joint3_pos = 0
-        joint3_vel = sensor_manager["IMU_XAxis_138"].signals["AngularVelocityXAxis_138"][-1] - joint2_vel
+        joint3_pos = sensor_manager["Rot_01"].position[-1]
+        joint3_vel = sensor_manager["Rot_01"].position[-1]
 
         IMU_joints = [[joint1_pos, joint1_vel],[joint2_pos, joint2_vel],[joint3_pos, joint3_vel]]
     else:

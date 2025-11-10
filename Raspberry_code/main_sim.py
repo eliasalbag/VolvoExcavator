@@ -1,7 +1,6 @@
 import time
 #from setup_CAN import *
 from sensors import *
-
 from plot import *
 
 def main_sim():
@@ -26,16 +25,18 @@ def main_sim():
         imu_138 = {"AngleXAxis_138": i*0.01, "AngularVelocityXAxis_138": 1.0}
         imu_139 = {"AngleXAxis_139": i*0.015, "AngularVelocityXAxis_139": 1.2}
 
-        encoder_data = {"SnsrPos_20": i*0.02}
+        encoder_data1 = {"SnsrPos_01": i*0.02}
+        encoder_data2 = {"SnsrPos_20": i*0.02}
+        encoder_data3 = {"SnsrPos_33": i*0.02}
 
         sensor_manager["IMU_XAxis_128"].new_data(imu_128, ts)
         sensor_manager["IMU_XAxis_137"].new_data(imu_137, ts)
         sensor_manager["IMU_XAxis_138"].new_data(imu_138, ts)
         sensor_manager["IMU_XAxis_139"].new_data(imu_139, ts)
 
-        sensor_manager["Rot_01"].new_data(encoder_data, ts)
-        sensor_manager["Rot_20"].new_data(encoder_data, ts)
-        sensor_manager["Rot_33"].new_data(encoder_data, ts)
+        sensor_manager["Rot_01"].new_data(encoder_data1, ts)
+        sensor_manager["Rot_20"].new_data(encoder_data2, ts)
+        sensor_manager["Rot_33"].new_data(encoder_data3, ts)
 
         IMU_joints = IMU_to_joint_converter(sensor_manager)
         IMU_joints = IMU_to_joint_converter(sensor_manager)
