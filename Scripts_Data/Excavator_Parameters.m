@@ -1,4 +1,5 @@
 Excavator_Param.DirectionalValve.SpoolTravel = 0.005;
+Excavator_Param.Input.Delay = 2;
 %Dimensions in m
 
 %Links
