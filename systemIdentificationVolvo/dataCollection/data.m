@@ -15,9 +15,9 @@
 
 %% Align and create iddata object from timeseries
 
-% Extract input and output from 'out' structure
-input_ts  = out.bomInput;   % Timeseries for input
-output_ts = out.bomAngle;   % Timeseries for output
+% Extract input and output from relevant structure
+input_ts  = RightJoystickInput;   % Timeseries for input
+output_ts = stickAngle;   % Timeseries for output
 
 % Sample time (adjust if known)
 Ts = 0.01;  % 10 ms sample time
@@ -35,25 +35,26 @@ t_common_end   = min(t_in(end), t_out(end));
 t_common = (t_common_start:Ts:t_common_end)';
 
 %% Resample both signals to the common time base
-u_resampled = interp1(t_in, u, t_common, 'linear', 'extrap');
-y_resampled = interp1(t_out, y, t_common, 'linear', 'extrap');
+u_resampled_stick = interp1(t_in, u, t_common, 'linear', 'extrap');
+y_resampled_stick = interp1(t_out, y, t_common, 'linear', 'extrap');
 
-%% Create the iddata object
-idDataBom = iddata(y_resampled, u_resampled, Ts);
+% %% Create the iddata object
+% idDataBom = iddata(y_resampled, u_resampled, Ts);
+% 
+% %% Optional: visualize
+% figure;
+% subplot(2,1,1);
+% plot(t_common, u_resampled);
+% title('Resampled Input');
+% xlabel('Time [s]'); ylabel('Input');
+% 
+% subplot(2,1,2);
+% plot(t_common, y_resampled);
+% title('Resampled Output');
+% xlabel('Time [s]'); ylabel('Output');
+% 
+% %% Save the iddata object
+% save('idDataBom251107.mat', 'idDataBom');
+% 
+% disp('✅ idDataBom object created and saved successfully as idDataStick251107.mat');
 
-%% Optional: visualize
-figure;
-subplot(2,1,1);
-plot(t_common, u_resampled);
-title('Resampled Input');
-xlabel('Time [s]'); ylabel('Input');
-
-subplot(2,1,2);
-plot(t_common, y_resampled);
-title('Resampled Output');
-xlabel('Time [s]'); ylabel('Output');
-
-%% Save the iddata object
-save('idDataBom251107.mat', 'idDataBom');
-
-disp('✅ idDataBom object created and saved successfully as idDataStick251107.mat');

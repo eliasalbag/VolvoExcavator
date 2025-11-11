@@ -1,3 +1,4 @@
+Excavator_Param.DirectionalValve.SpoolTravel = 0.005;
 %Dimensions in m
 
 %Links
@@ -24,6 +25,8 @@ Excavator_Param.Bom.CutoutWidth = 25e-3;
 Excavator_Param.Bom.InnerWidth = Excavator_Param.Bom.Width - 2*Excavator_Param.Bom.CutoutWidth;
 Excavator_Param.Bom.Length = 1903.392e-3;
 Excavator_Param.Bom.Weight = 200;%[kg]
+Excavator_Param.Bom.InitAngle = 473.25; 
+%571.8
 
 %Stick
 Excavator_Param.Stick.Width = 150e-3;
@@ -31,6 +34,7 @@ Excavator_Param.Stick.CutoutWidth = 25e-3;
 Excavator_Param.Stick.InnerWidth = Excavator_Param.Stick.Width - 2*Excavator_Param.Stick.CutoutWidth;
 Excavator_Param.Stick.Length = 1351.485e-3;
 Excavator_Param.Stick.Weight = 150;%[kg]
+Excavator_Param.Stick.InitAngle = 373.21;
 
 
 %Linkage arms
@@ -49,8 +53,7 @@ Excavator_Param.Bucket.Length = 590.267e-3;
 Excavator_Param.Link.BucketTopRadius = 15e-3;
 Excavator_Param.Link.BucketTopLength = 2*(Excavator_Param.Bucket.ThinWidth) + (Excavator_Param.Stick.Width);
 Excavator_Param.Bucket.Weight = 70; %[kg]
-
-
+Excavator_Param.Bucket.InitAngle = 464.23;
 
 
 

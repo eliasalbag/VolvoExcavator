@@ -18,7 +18,7 @@ RESAMPLE_METHOD = 'zoh';   % zero-order hold (recommended for valve voltages)
 % RESAMPLE_METHOD = 'linear';
 
 % Initial guess for input->output transport delay (seconds). Hydraulics often ~20–50 ms.
-INIT_DELAY_S = 0.03;  % 30 ms
+INIT_DELAY_S = 0.02;  % 30 ms
 %% =====================================================================
 
 %% 0) Basic checks
@@ -119,13 +119,14 @@ nb      = [nb_row; nb_row];
 orders  = {na, nb, nk};
 
 %% 5) Choose ONE nonlinear mapping (shared by both outputs) and estimate
-nl = idSigmoidNetwork('NumberOfUnits', 24);
+nl = idNeuralNetwork([64 32], ["relu" "tanh"], true, true); 
 
-fprintf('Estimating NLARX (this can take a bit for larger datasets)...\n');
-sys = nlarx(id, 'na', na, 'nb', nb, 'nk', nk, 'OutputFcn', nl, ...
-            'Focus','simulation', 'Display','on');
+opt = nlarxOptions('Focus','simulation','Display','on');
 
-
+sys = nlarx(id, ...
+    'NonlinearOrder', {na, nb, nk}, ...
+    'Nonlinearity', nl, ...
+    'Options', opt);
 %% 6) Validation: 1-step prediction vs free-run simulation
 % 1-step prediction on validation set
 % 1-step prediction
