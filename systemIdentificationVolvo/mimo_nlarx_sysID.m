@@ -79,13 +79,13 @@ u1abs = abs(u(:,1));
 u2abs = abs(u(:,2));
 
 % Augment the inputs with these exogenous, causal features
-u_aug = [u, sin_th1, sin_t1p2, cos_t1p2, dth1, dth2, u1abs, u2abs];
+u_aug = [u];%, sin_th1, sin_t1p2, cos_t1p2, dth1, dth2, u1abs, u2abs];
 nu_aug = size(u_aug,2);
 
 % Build iddata at output sample time
 z_full = iddata(y, u_aug, Ts_y, ...
     'OutputName', {'theta1','theta2'}, ...
-    'InputName',  {'u1','u2','sin(th1)','sin(t1+t2)','cos(t1+t2)','dth1','dth2','|u1|','|u2|'});
+    'InputName',  {'u1','u2'}); %,'sin_th1','sin_t1p2','cos_t1p2','dth1','dth2','u1_abs','u2_abs'});
 z_full = detrend(z_full, 0);   % remove means only (preserve operating point)
 
 %% 3) Split into estimation (70%) and validation (30%) — contiguous split
@@ -110,7 +110,7 @@ nk = nk_samp * ones(2, nu_aug);
 
 orders = {na, nb, nk};
 
-%% 4b) (Optional but recommended) lighten nb taps for engineered features
+%% 4b) lighten nb taps for engineered features
 % Keep 2 taps for real inputs u1,u2; 1 tap for features (sin/cos/dth/|u|)
 % nu_aug = size(u_aug,2); % should already exist
 nu_aug = size(u_aug,2);                 % already defined
@@ -118,15 +118,29 @@ nb_row  = [2 2  ones(1, nu_aug-2)];     % 2 taps for u1,u2; 1 for engineered fea
 nb      = [nb_row; nb_row];
 orders  = {na, nb, nk};
 
-%% 5) Choose ONE nonlinear mapping (shared by both outputs) and estimate
-nl = idNeuralNetwork([64 32], ["relu" "tanh"], true, true); 
+%% 4c)  Regressors
 
-opt = nlarxOptions('Focus','simulation','Display','on');
+names = [z_full.OutputName', z_full.InputName']';
 
-sys = nlarx(id, ...
-    'NonlinearOrder', {na, nb, nk}, ...
-    'Nonlinearity', nl, ...
-    'Options', opt);
+outputLags = {1:2, 1:2};
+inputLags = {0:2, 0:2, 0,0,0,0,0,0,0};
+
+
+L = linearRegressor(names,{1:2, 1:2, 0:2, 0:2});
+C1 = customRegressor({'theta1','theta2'}, {1:2, 1:2}, @(a,b)cos(a)+cos(b))
+
+
+R = [L;C1]
+
+%% 5) estimate
+
+nl = idNeuralNetwork("cascade-correlation", "relu",true,true);
+opt = nlarxOptions('Focus', 'simulation', 'Display', 'on');
+
+fprintf('Starting simulation - nonlinear ARX model');
+
+sys = nlarx(id, R, nl, opt);
+
 %% 6) Validation: 1-step prediction vs free-run simulation
 % 1-step prediction on validation set
 % 1-step prediction
