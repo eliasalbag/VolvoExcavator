@@ -27,6 +27,7 @@ Excavator_Param.Bom.InnerWidth = Excavator_Param.Bom.Width - 2*Excavator_Param.B
 Excavator_Param.Bom.Length = 1903.392e-3;
 Excavator_Param.Bom.Weight = 200;%[kg]
 Excavator_Param.Bom.InitAngle = 473.25; 
+Excavator_Param.Bom.InitAngle2 = Excavator_Param.Bom.InitAngle + 39;
 %571.8
 
 %Stick
@@ -36,6 +37,7 @@ Excavator_Param.Stick.InnerWidth = Excavator_Param.Stick.Width - 2*Excavator_Par
 Excavator_Param.Stick.Length = 1351.485e-3;
 Excavator_Param.Stick.Weight = 150;%[kg]
 Excavator_Param.Stick.InitAngle = 373.21;
+Excavator_Param.Stick.InitAngle2 = Excavator_Param.Stick.InitAngle + 75;
 
 
 %Linkage arms
@@ -55,7 +57,6 @@ Excavator_Param.Link.BucketTopRadius = 15e-3;
 Excavator_Param.Link.BucketTopLength = 2*(Excavator_Param.Bucket.ThinWidth) + (Excavator_Param.Stick.Width);
 Excavator_Param.Bucket.Weight = 70; %[kg]
 Excavator_Param.Bucket.InitAngle = 464.23;
-
 
 
 

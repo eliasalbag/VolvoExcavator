@@ -1,60 +1,57 @@
-% %use this script when you want to save a run from the excavator of inputs
-% %and outputs. change the name to relevant cylinder
-% 
-% % Assuming 'out' is already in the workspace
-% input = out.stickInput.Data;   % Replace with the actual field name for input data
-% output = out.stickAngle.Data;  % Replace with the actual field name for output data
-% Ts = 0.01;                   % Sample time
-% 
-% % Create the iddata object
-% idDataStick = iddata(output, input, Ts);
-% 
-% % Save the iddata object to a .mat file
-% save('idDataStick251107.mat', 'idDataStick251107');
-
-
 %% Align and create iddata object from timeseries
+RightJoystickInput = out{7}.Values;
+LeftJoystickInput = out{6}.Values;
+
+bomAngle = out{3}.Values;
+stickAngle = out{2}.Values;
 
 % Extract input and output from relevant structure
-input_ts  = RightJoystickInput;   % Timeseries for input
-output_ts = stickAngle;   % Timeseries for output
+% Stick
+input_ts_stick  = RightJoystickInput;   % Timeseries for input
+output_ts_stick = stickAngle;            % Timeseries for output
+
+% Bom
+input_ts_bom = LeftJoystickInput;        % Timeseries for input
+output_ts_bom = bomAngle;                % Timeseries for output
 
 % Sample time (adjust if known)
 Ts = 0.01;  % 10 ms sample time
 
 %% Extract time and data
-t_in = input_ts.Time;
-u = input_ts.Data;
+% Stick
+t_in_stick = input_ts_stick.Time;
+u_stick = input_ts_stick.Data;
 
-t_out = output_ts.Time;
-y = output_ts.Data;
+t_out_stick = output_ts_stick.Time;
+y_stick = output_ts_stick.Data;
+
+% Bom
+t_in_bom = input_ts_bom.Time;
+u_bom = input_ts_bom.Data;  % Corrected variable name from u_stick to u_bom
+
+t_out_bom = output_ts_bom.Time;
+y_bom = output_ts_bom.Data;
 
 %% Define a common time vector (overlapping range)
-t_common_start = max(t_in(1), t_out(1));
-t_common_end   = min(t_in(end), t_out(end));
-t_common = (t_common_start:Ts:t_common_end)';
+% Stick
+t_common_start_stick = max(t_in_stick(1), t_out_stick(1));
+t_common_end_stick = min(t_in_stick(end), t_out_stick(end));
+t_common_stick = (t_common_start_stick:Ts:t_common_end_stick)';
+
+% Bom
+t_common_start_bom = max(t_in_bom(1), t_out_bom(1));
+t_common_end_bom = min(t_in_bom(end), t_out_bom(end));
+t_common_bom = (t_common_start_bom:Ts:t_common_end_bom)';
 
 %% Resample both signals to the common time base
-u_resampled_stick = interp1(t_in, u, t_common, 'linear', 'extrap');
-y_resampled_stick = interp1(t_out, y, t_common, 'linear', 'extrap');
+% Stick
+u_resampled_stick = interp1(t_in_stick, u_stick, t_common_stick, 'linear', 'extrap');
+y_resampled_stick = interp1(t_out_stick, y_stick, t_common_stick, 'linear', 'extrap');
 
-% %% Create the iddata object
-% idDataBom = iddata(y_resampled, u_resampled, Ts);
-% 
-% %% Optional: visualize
-% figure;
-% subplot(2,1,1);
-% plot(t_common, u_resampled);
-% title('Resampled Input');
-% xlabel('Time [s]'); ylabel('Input');
-% 
-% subplot(2,1,2);
-% plot(t_common, y_resampled);
-% title('Resampled Output');
-% xlabel('Time [s]'); ylabel('Output');
-% 
-% %% Save the iddata object
-% save('idDataBom251107.mat', 'idDataBom');
-% 
-% disp('✅ idDataBom object created and saved successfully as idDataStick251107.mat');
+% Bom
+u_resampled_bom = interp1(t_in_bom, u_bom, t_common_bom, 'linear', 'extrap');  % Corrected variable name
+y_resampled_bom = interp1(t_out_bom, y_bom, t_common_bom, 'linear', 'extrap');
 
+%% Create iddata objects
+data_stick = iddata(y_resampled_stick, u_resampled_stick, Ts);
+data_bom = iddata(y_resampled_bom, u_resampled_bom, Ts);
