@@ -1,30 +1,54 @@
 import cantools
 from canlib import canlib, Frame
 from sensors import *
+import time
 
 def open_can_channel():
-    channel = canlib.openChannel(0, canlib.Open.EXCLUSIVE)
-    channel.setBusOutputControl(canlib.Driver.NORMAL)
-    channel.setBusParams(canlib.canBITRATE_500K)
-    channel.busOn()
-
-    status = channel.getBusStatus()
-    if status == 0:
-        print("Bus ON")
-    elif status <= 2:
-        print("Bus ON, but with warnings")
-    else:
-        print(f"Bus failed to start. Status: {status}")
-    return channel
-
+    # Öppna Kvaser-kanal
+    ch = canlib.openChannel(0, 0)
+    ch.setBusOutputControl(canlib.Driver.NORMAL)
+    ch.setBusParams(canlib.canBITRATE_500K)
+    ch.busOn()
+    print("Välkommen till VOLVO CE projektet här kommer Viktro Traktor!")
+    status = ch.readStatus()
+    print("Bus status:", status)
+    return ch
+    
+"""
 def listen_can_messages(channel, dbc_sensors, sensor_manager, time):
     try:
-        frame = channel.read(timeout=0)
-        msg = dbc_sensors.get_message_by_frame_id(frame.id)
+        frame = channel.read(timeout=1)
+        try:
+            msg = dbc_sensors.get_message_by_frame_id(frame.id)
+        except:
+            return
         decoded = msg.decode(frame.data)
         sensor_manager[msg.name].new_data(decoded, time)
     except (KeyError, cantools.database.errors.DecodeError):
         print("Error reading data")
+"""
+def listen_can_messages(channel, dbc_sensors, sensor_manager, _ignored_ts=None):
+    """Läs ur alla väntande CAN-ramar just nu (drain) utan att blockera."""
+    while True:
+        try:
+            # timeout=0 => icke-blockerande; kastar CanNoMsg om kön är tom
+            frame = channel.read(timeout=0)
+        except canlib.CanNoMsg:
+            break  # inget mer i kön just nu
+        except canlib.CanError as e:
+            print("CAN error:", e)
+            break
+
+        # Tidsstämpla varje ram när den faktiskt läses
+        ts = time.monotonic()
+
+        try:
+            msg = dbc_sensors.get_message_by_frame_id(frame.id)
+            decoded = msg.decode(frame.data)
+            sensor_manager[msg.name].new_data(decoded, ts)
+        except (KeyError, cantools.database.errors.DecodeError):
+            # okänd frame eller decode-fel – hoppa vidare
+            continue
 
 #sends control message to MC43
 def send_control(channel, control_1, control_2, dbc_hydraulics):

@@ -8,10 +8,15 @@ class Encoder():
         self.position = []
         self.vel = []
         self.timestamps = []
-        self.offset = {"Rot_01": 2.060410383456638e+02,"Rot_20": 2.390501084826040e+02, "Rot_33": 2.052407368979854e+02 }
+        self.offset = {"Rot_01": 2.060410383456638e+02,"Rot_20": 2.68174e+02, "Rot_33": 2.052407368979854e+02}
 
     def new_data(self, data, ts=None):
-        self.position.append(data["SnsrPos"+self.name[-3:]]-self.offset[self.name])
+        angle = data["SnsrPos"+self.name[-3:]]/65536*360-self.offset[self.name]
+        if self.name == "Rot_33":
+            self.position.append(angle)
+        else:
+            self.position.append(360 + angle)
+            
         self.timestamps.append(ts)
         self.velocity_encoder(ts)
 
@@ -39,8 +44,11 @@ class IMU():
     def new_data(self, data, ts=None):
         for sig_name, value in data.items():
             if sig_name in self.signals:
-                self.signals[sig_name].append(value)
-        self.timestamps.append(ts)
+                if sig_name == "Angle"+self.name[4:] and value > 270:
+                    self.signals[sig_name].append(value-360)
+                else:
+                    self.signals[sig_name].append(value)
+                    self.timestamps.append(ts)
 
 # Kalman filter: 
 # 1. Gissa vart systemet är på väg genom att ta förra vinkeln + hastighet × tidssteg.
@@ -92,21 +100,20 @@ class KalmanFilter:
  # Sensorfusion vid given tidpunkt
 def fuse_sensors(sensor_manager, IMU_joints, kf, ts):
     fused = []
-    IMU_joints = IMU_to_joint_converter(sensor_manager)
-    encoder = ["Rot_33", "Rot_20", "Rot_01"]
+    encoder_names = ["Rot_33", "Rot_20", "Rot_01"]
     for i in range(3):
-        encoder = sensor_manager["Rot_01"]
+        encoder = sensor_manager[encoder_names[i]]
 
         #kontrollerar att tidsstämplar är inom rimligt tid, annars saknar vi data från någon sensor
-        tolerance = 0.01
+        tolerance = 0.04
         if IMU_joints == None: #data med inte godkänd tidsstämpel från IMU
-            if encoder.position[-1] > ts - tolerance:
+            if encoder.timestamps[-1] > (ts - tolerance):
                 fused.append(encoder.position[-1], encoder.vel[-1])
                 print(f"Warning. Missing data from IMUs")
                 continue
-        if encoder.position[-1] > ts - tolerance:
+        if encoder.timestamps[-1] < (ts - tolerance):
                 fused.append([IMU_joints[i][0],IMU_joints[i][1]])
-                print(f"Warning. Missing data from encoder: {encoder.name}")
+                #print(f"Warning. Missing data from encoder: {encoder.name}")
                 continue
 
         z = np.array([
@@ -121,20 +128,20 @@ def fuse_sensors(sensor_manager, IMU_joints, kf, ts):
     return fused
 
 def IMU_to_joint_converter(sensor_manager):
-    if sensor_manager["IMU_XAxis_128"].timestamps[-1] and sensor_manager["IMU_XAxis_137"].timestamps[-1] and sensor_manager["IMU_XAxis_138"].timestamps[-1] and sensor_manager["IMU_XAxis_139"].timestamps[-1]:#kontrollera att alla IMUer har godkända tidsstämplar.
-        #128 hytt, 137 bom, 138 arm, 139 skopa
-        joint1_pos = sensor_manager["IMU_XAxis_137"].signals["AngleXAxis_137"][-1] - sensor_manager["IMU_XAxis_128"].signals["AngleXAxis_128"][-1] - (sensor_manager["IMU_XAxis_128"].signals["AngleXAxis_128"][0]-sensor_manager["Rot_01"].position[0])
-        joint1_vel = sensor_manager["IMU_XAxis_137"].signals["AngularVelocityXAxis_137"][-1] - sensor_manager["IMU_XAxis_128"].signals["AngularVelocityXAxis_128"][-1]
+    #if sensor_manager["IMU_XAxis_128"].timestamps[-1] and sensor_manager["IMU_XAxis_137"].timestamps[-1] and sensor_manager["IMU_XAxis_138"].timestamps[-1] and sensor_manager["IMU_XAxis_139"].timestamps[-1]:#kontrollera att alla IMUer har godkända tidsstämplar.
+    #128 hytt, 137 bom, 138 arm, 139 skopa
+    joint1_pos = 360-sensor_manager["IMU_XAxis_137"].signals["AngleXAxis_137"][-1] - sensor_manager["IMU_XAxis_128"].signals["AngleXAxis_128"][-1] - (360-sensor_manager["IMU_XAxis_137"].signals["AngleXAxis_137"][0]-sensor_manager["IMU_XAxis_128"].signals["AngleXAxis_128"][0]-sensor_manager["Rot_33"].position[0])
+    joint1_vel = sensor_manager["IMU_XAxis_137"].signals["AngularVelocityXAxis_137"][-1] - sensor_manager["IMU_XAxis_128"].signals["AngularVelocityXAxis_128"][-1]
 
-        joint2_pos = 360 - joint1_pos -(90 - sensor_manager["IMU_XAxis_138"].signals["AngleXAxis_138"][-1])
-        joint2_vel = sensor_manager["IMU_XAxis_138"].signals["AngularVelocityXAxis_138"][-1] - joint1_vel
+    joint2_pos = 180+90-joint1_pos+sensor_manager["IMU_XAxis_138"].signals["AngleXAxis_138"][-1]
+    joint2_vel = sensor_manager["IMU_XAxis_138"].signals["AngularVelocityXAxis_138"][-1] - joint1_vel
 
-        joint3_pos = sensor_manager["Rot_01"].position[-1]
-        joint3_vel = sensor_manager["Rot_01"].position[-1]
+    joint3_pos = sensor_manager["Rot_01"].position[-1]
+    joint3_vel = sensor_manager["Rot_01"].vel[-1]
 
-        IMU_joints = [[joint1_pos, joint1_vel],[joint2_pos, joint2_vel],[joint3_pos, joint3_vel]]
-    else:
-        IMU_joints = None
+    IMU_joints = [[joint1_pos, joint1_vel],[joint2_pos, joint2_vel],[joint3_pos, joint3_vel]]
+    #else:
+        #IMU_joints = None
     return IMU_joints
 
 def load_dbc_files():
@@ -152,5 +159,5 @@ def create_sensor_objects(dbc_sensors):
                 sensor_manager[msg.name] = Encoder(msg.name)
     return sensor_manager
     
-#ibland kommer inte sensordata som man tror, då viktigt att använda senaste värde eller interpolera.
+# ibland kommer inte sensordata som man tror, då viktigt att använda senaste värde eller interpolera.
 # om tid för gammal, ta bort i fusion och flagga!
