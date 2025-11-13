@@ -134,7 +134,8 @@ R = [L;C1]
 
 %% 5) estimate
 
-nl = idNeuralNetwork("cascade-correlation", "relu",true,true);
+%nl = idNeuralNetwork("cascade-correlation", "relu",true,true);
+nl = idSigmoidNetwork;
 opt = nlarxOptions('Focus', 'simulation', 'Display', 'on');
 
 fprintf('Starting simulation - nonlinear ARX model');
@@ -148,8 +149,19 @@ yp1 = predict(sys, val, 1);
 [~, fit_pred] = compare(val, yp1);
 
 % Free-run simulation
-ys = sim(sys, val.u);
-[~, fit_sim] = compare(val, ys);
+ys = sim(sys, val);   % may be numeric or iddata
+
+if isa(ys, 'iddata')
+    ys_id = ys;
+else
+    % val has the input & output names and Ts already
+    ys_id = iddata(ys, val.u, Ts_y, ...
+            'OutputName', val.OutputName, ...
+            'InputName',  val.InputName);
+end
+
+% now compare (val is iddata, ys_id is iddata)
+[~, fit_sim] = compare(val, ys_id);
 
 fprintf('\n=== Validation metrics (NRMSE %% per output) ===\n');
 fprintf('Prediction (1-step):  y1=%5.1f %%   y2=%5.1f %%\n', fit_pred(1), fit_pred(2));
