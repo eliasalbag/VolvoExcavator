@@ -23,6 +23,21 @@ increment = 10e-2 # 10 cm increment
 Check x_stick
 """
 
+
+
+"""
+TODO:
+
+Implement omnidirectional movement
+dx = increment * cos(arctan(y_stick/x_stick))
+dx = increment * sin(arctan(y_stick/x_stick))
+
+
+"""
+
+
+
+
 if (x_stick < -tol) and (x_stick > tol):
     dx = increment * sign(x_stick)
 else:
