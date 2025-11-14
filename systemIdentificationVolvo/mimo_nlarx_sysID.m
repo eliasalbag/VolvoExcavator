@@ -127,18 +127,20 @@ inputLags = {0:2, 0:2, 0,0,0,0,0,0,0};
 
 
 L = linearRegressor(names,{1:2, 1:2, 0:2, 0:2});
-C1 = customRegressor({'theta1','theta2'}, {1:2, 1:2}, @(a,b)cos(a)+cos(b))
+%C1 = customRegressor({'theta1','theta2'}, {1:2, 1:2}, @(a,b)cos(a)+cos(b))
 
 
-R = [L;C1]
+%R = [L;C1]
+R = L;
 
 %% 5) estimate
 
 %nl = idNeuralNetwork("cascade-correlation", "relu",true,true);
-nl = idSigmoidNetwork;
+nl = idLinear;
 opt = nlarxOptions('Focus', 'simulation', 'Display', 'on');
 
 fprintf('Starting simulation - nonlinear ARX model');
+
 
 sys = nlarx(id, R, nl, opt);
 
