@@ -33,25 +33,6 @@ Ki = 2.0
 Kd = 0.0
 
 # -------------------------------------------------------------------
-# Persistent state (keep between calls)
-# -------------------------------------------------------------------
-if "theta1_prev" not in globals():
-    theta1_prev = None
-if "theta2_prev" not in globals():
-    theta2_prev = None
-
-if "thetadot1_error_prev" not in globals():
-    thetadot1_error_prev = None
-if "thetadot2_error_prev" not in globals():
-    thetadot2_error_prev = None
-
-if "thetadot1_error_integral_prev" not in globals():
-    thetadot1_error_integral_prev = 0.0
-if "thetadot2_error_integral_prev" not in globals():
-    thetadot2_error_integral_prev = 0.0
-
-
-# -------------------------------------------------------------------
 # 1) Joystick -> Cartesian velocity reference (axis-locked)
 # -------------------------------------------------------------------
 
@@ -145,7 +126,7 @@ thetadot_meas_vec = np.array([theta1dot_meas, theta2dot_meas])
 
 
 # -------------------------------------------------------------------
-# (optional logging) Cartesian measured velocity & error
+# Logg detta i Simulink för: Cartesian measured velocity & error
 # -------------------------------------------------------------------
 
 xydot_meas = J @ thetadot_meas_vec
@@ -171,9 +152,9 @@ theta2dot_error = float(thetadot_error[1])
 # -------------------------------------------------------------------
 
 if thetadot1_error_prev is None:
-    thetadot1_error_prev = theta1dot_error
+    thetadot1_error_prev = 0.0
 if thetadot2_error_prev is None:
-    thetadot2_error_prev = theta2dot_error
+    thetadot2_error_prev = 0.0
 
 theta1dot_error_integral = (
     (theta1dot_error + thetadot1_error_prev) * DT / 2.0
