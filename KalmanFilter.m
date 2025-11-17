@@ -36,11 +36,11 @@ classdef KalmanFilter < handle
             xpred = obj.x; % Store the predicted state
         end
 
-        function xupd = update(obj, z)
+        function xupd = update(obj, EncoderPos33X, EncoderVel33X, joint1_pos, joint1_vel)
             % z must be 4x1 measurment vector
             S = obj.H * obj.P * obj.H' + obj.R;
             K = obj.P * obj.H' / S;
-            y = z - obj.H * obj.x;
+            y = [EncoderPos33X, EncoderVel33X, joint1_pos, joint1_vel] - obj.H * obj.x;
             obj.x = obj.x + K * y;
             I = eye(size(obj.P));
             obj.P = (I - K * obj.H) * obj.P;
