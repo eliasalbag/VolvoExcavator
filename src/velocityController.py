@@ -28,8 +28,8 @@ L2 = 1351.485e-3
 L3 = 590.267e-3  # not using the bucket angle here
 
 # Joint-space PID gains
-Kp = 30.0
-Ki = 2.0
+#Kp = .7
+#Ki = 0.3
 Kd = 0.0
 
 # -------------------------------------------------------------------
@@ -191,18 +191,14 @@ thetadot2_error_prev = theta2dot_error
 
 
 # -------------------------------------------------------------------
-# 7) Joint-space PID -> normalized valve control [-1, 1]
+# 7) Joint-space PID to normalized valve control [-1, 1]
 # -------------------------------------------------------------------
 
-valve_control_norm_vec = (
-    Kp * thetadot_error
-    + Ki * thetadot_error_integral
-    + Kd * thetadot_error_derivative
-)
+valve_control_norm_vec = Kp*thetadot_error + Ki*thetadot_error_integral + Kd*thetadot_error_derivative
 
 valve_control_norm_vec = np.clip(valve_control_norm_vec, -1.0, 1.0)
 
-control_1_norm = float(valve_control_norm_vec[0])
+control_1_norm = -float(valve_control_norm_vec[0])
 control_2_norm = float(valve_control_norm_vec[1])
 
 
