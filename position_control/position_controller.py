@@ -37,12 +37,9 @@ Convert to degrees
 theta1_ref = theta1_ref * 180 / np.pi
 theta2_ref = theta2_ref * 180 / np.pi
 
-
-
 """
 PID - controller
 """
-
 error_1 = theta1_ref - theta1_meas
 error_2 = theta2_ref - theta2_meas
 
@@ -82,7 +79,6 @@ error_2_derivative = (error_2 - error_2_prev) / Ts
 """
 PID control law
 """
-
 
 ctrl_1 = Kp1 * error_1 + Ki1 * error_1_integral + Kd1 * error_1_derivative
 ctrl_2 = Kp2 * error_2 + Ki2 * error_2_integral + Kd2 * error_2_derivative
