@@ -12,10 +12,10 @@ import numpy as np
 # -------------------------------------------------------------------
 # Constants
 # -------------------------------------------------------------------
-DT = 0.01  # time step [s]
+DT = 0.1  # time step [s]
 
-VX_MAX = 0.5  # max Cartesian speed along x [m/s]
-VY_MAX = 0.5  # max Cartesian speed along y [m/s]
+VX_MAX = 0.2  # max Cartesian speed along x [m/s]
+VY_MAX = 0.2  # max Cartesian speed along y [m/s]
 
 AXIS_DEADZONE_NORM = 0.05   # joystick deadzone in normalized units [-1, 1]
 
@@ -30,7 +30,8 @@ L3 = 590.267e-3  # not using the bucket angle here
 # Joint-space PID gains
 #Kp = .7
 #Ki = 0.3
-Kd = 0.0
+Kd1 = 0.0
+Kd2 = 0.0
 
 # -------------------------------------------------------------------
 # 1) Joystick -> Cartesian velocity reference (axis-locked)
@@ -111,6 +112,7 @@ theta_dot_ref_vec = np.array([theta1_dot_ref, theta2_dot_ref])
 # 3) Measured joint velocities (finite difference)
 # -------------------------------------------------------------------
 
+'''
 if theta1_prev is None:
     theta1_prev = theta1
 if theta2_prev is None:
@@ -122,7 +124,11 @@ theta2dot_meas = (theta2 - theta2_prev) / DT
 theta1_prev = theta1
 theta2_prev = theta2
 
-thetadot_meas_vec = np.array([theta1dot_meas, theta2dot_meas])
+'''
+
+thetadot_meas_vec = np.array([theta1dot_filtered, theta2dot_filtered])
+
+
 
 
 # -------------------------------------------------------------------
@@ -143,8 +149,8 @@ ydot_error = float(xydot_error[1])
 # -------------------------------------------------------------------
 
 thetadot_error = theta_dot_ref_vec - thetadot_meas_vec
-theta1dot_error = float(thetadot_error[0])
-theta2dot_error = float(thetadot_error[1])
+theta1dot_error = thetadot_error[0]
+theta2dot_error = thetadot_error[1]
 
 
 # -------------------------------------------------------------------
@@ -194,17 +200,5 @@ thetadot2_error_prev = theta2dot_error
 # 7) Joint-space PID to normalized valve control [-1, 1]
 # -------------------------------------------------------------------
 
-valve_control_norm_vec = Kp*thetadot_error + Ki*thetadot_error_integral + Kd*thetadot_error_derivative
-
-valve_control_norm_vec = np.clip(valve_control_norm_vec, -1.0, 1.0)
-
-control_1_norm = -float(valve_control_norm_vec[0])
-control_2_norm = float(valve_control_norm_vec[1])
-
-
-# -------------------------------------------------------------------
-# 8) Scale normalized control to valve hardware range [-100, 100]
-# -------------------------------------------------------------------
-
-u1 = float(np.clip(control_1_norm * 100.0, -100.0, 100.0))
-u2 = float(np.clip(control_2_norm * 100.0, -100.0, 100.0))
+u1 = -(Kp1*theta1dot_error + Ki1*theta1dot_error_integral + Kd1*theta1dot_error_derivative)
+u2 = Kp2*theta2dot_error + Ki2*theta2dot_error_integral + Kd2*theta2dot_error_derivative
