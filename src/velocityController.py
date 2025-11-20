@@ -141,7 +141,7 @@ ydot_meas = float(xydot_meas[1])
 
 xydot_error = xydot_ref - xydot_meas
 xdot_error = float(xydot_error[0])
-ydot_error = float(xydot_error[1])
+ydot_error = -float(xydot_error[1])
 
 
 # -------------------------------------------------------------------
