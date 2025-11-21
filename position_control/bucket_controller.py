@@ -40,7 +40,7 @@ bucket_error_prev = bucket_error
 # calculate derivative
 bucket_error_derivative = (bucket_error - bucket_error_prev) / Ts
 
-control_3 = -(Kp_bucket * bucket_error +  Ki_bucket * bucket_error_integral +  Kd_bucket * bucket_error_derivative )
+control_3 = -(Kp_bucket * bucket_error +  Ki_bucket * bucket_error_integral +  Kd_bucket * bucket_error_derivative  + 0.4*stick_input + 0.4*bom_input)
 
 
 

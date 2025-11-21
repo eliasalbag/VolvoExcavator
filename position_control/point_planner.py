@@ -16,8 +16,8 @@ y_meas = L1*sin(theta1) + L2*sin(theta1 + theta2)
 x_meas = L1*cos(theta1) + L2*cos(theta1 + theta2)
 
 tol = 20
-increment = 0.05       # 20 cm
-point_tolerance = 0.045 # 10 cm
+#increment = 0.05       # 20 cm
+#point_tolerance = 0.045 # 10 cm
 
 if abs(x_stick) < 1:
     x_stick = 0

@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Info File="communicationExcavatorCAN.slx" GroupUUID="default" Icon="" Name="communicationExcavatorCAN" Type="StartUp" Visible="0">
-    <Extension Name="StartUpPrev" Value="6553bdc5-3925-4dce-b3b9-55eab301b361"/>
-</Info>
