@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Info File="lookupTable/Stick_Cmd_LUT.mat" GroupUUID="default" Icon="" Name="Stick_Cmd_LUT" Type="StartUp" Visible="0">
+    <Extension Name="StartUpPrev" Value="6681d567-f422-4ea4-822e-2163ffdabd7d"/>
+</Info>
