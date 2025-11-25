@@ -207,7 +207,7 @@ fprintf('%s\n', format_vector(Bucket_Vel_LUT));
 fprintf('   **Simulink Table Data (Command):**\n');
 fprintf('%s\n', format_vector(Bucket_Cmd_LUT));
 
-%% Neural net
+%% Neural net STICK
 
 % 1. Load Data
 T = readmatrix("training_data.csv");
@@ -221,6 +221,16 @@ Wd_bucket = T(:,6);
 U_boom = T(:,7);
 U_stick  = T(:,8);
 U_bucket  = T(:,9);
+
+% --- NEW CODE START ---
+% Correction: Stick Angle (A_stick) is 27.5 degrees too much.
+% 1. Convert 27.5 degrees to radians:
+deg_to_rad = pi / 180;
+correction_rad = 27.5 * deg_to_rad; 
+
+% 2. Apply the correction to the entire A_stick column:
+A_stick = A_stick - correction_rad;
+% --- NEW CODE END ---
 
 % 2. APPLY DELAY COMPENSATION (Crucial Step!)
 % Use the delay we found earlier (e.g., 23 samples)
@@ -289,7 +299,9 @@ title('Learned Gravity Compensation (Holding Current)');
 save('Stick_SmartLUT.mat', 'net');
 % To use later: valve_cmd = net([wd; a1; a2; a3]);
 
-%% Neural net
+gensim(net)
+
+%% Neural net BOOM
 % 1. Load Data
 T = readmatrix("training_data.csv");
 % Extract Columns
@@ -303,25 +315,31 @@ U_boom   = T(:,7);  % New: Boom Valve Command (Target)
 U_stick  = T(:,8);
 U_bucket = T(:,9);  
 
+% --- NEW CODE START ---
+% Correction: Stick Angle (A_stick) is 27.5 degrees too much.
+% 1. Convert 27.5 degrees to radians:
+deg_to_rad = pi / 180;
+correction_rad = 27.5 * deg_to_rad; 
+
+% 2. Apply the correction to the entire A_stick column:
+A_stick = A_stick - correction_rad;
+% --- NEW CODE END ---
+
 % 2. APPLY DELAY COMPENSATION (Crucial Step!)
 d = 23; 
 % We must align ALL inputs (Angles, Velocities) to the target output (Valve Command)
 valid_len = length(U_boom) - d;
-
 % --- INPUTS (State at time t) ---
 X_vel    = Wd_boom(1+d : end);      % Aligned Boom Velocity (Flow input)
 X_ang1   = A_boom(1+d : end);       % Aligned Boom Angle (Gravity input)
 X_ang2   = A_stick(1+d : end);      % Aligned Stick Angle (Gravity input - PLOTTED)
 X_ang3   = A_bucket(1+d : end);     % Aligned Bucket Angle (Gravity input)
-
 % --- TARGET (Action at time t+d) ---
 Y_target = U_boom(1 : end-d);       % Shifted Boom Valve Command (Target)
-
 % 3. Prepare Training Data
 % Input Matrix: 4 Rows x N Columns
 inputs = [X_vel, X_ang1, X_ang2, X_ang3]'; 
 targets = Y_target';
-
 % 4. Create and Train the Network
 hiddenLayerSize = 15; 
 net_boom = fitnet(hiddenLayerSize); % Renamed net to net_boom
@@ -331,11 +349,9 @@ net_boom.divideParam.valRatio = 15/100;
 net_boom.divideParam.testRatio = 15/100;
 fprintf('Training Neural Network LUT for BOOM...\n');
 [net_boom, tr_boom] = train(net_boom, inputs, targets);
-
 % 5. Validate the Results
 outputs_boom = net_boom(inputs);
 performance_boom = perform(net_boom, targets, outputs_boom);
-
 % 6. Visualization: How Gravity Affects the Valve (1D Plot)
 % Plotting Boom Valve command vs STICK Angle (since Stick Angle is the X-axis for the 3D plot)
 figure('Name', 'Boom Gravity Compensation Learner');
@@ -354,6 +370,7 @@ title('Learned Gravity Compensation (Boom Control vs Stick Angle)');
 % Save the network for use
 save('Boom_SmartLUT.mat', 'net_boom');
 
+gensim(net_boom)
 %% Neural Network Inverse Dynamics Model - BOOM JOINT
 
 % 1. Load Data
