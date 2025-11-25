@@ -25,9 +25,9 @@ classdef KalmanFilter < handle
             obj.x = [0; 0];
             obj.P = [5, 0; 0, 5];
             obj.R = [0.001, 0, 0, 0;    % encoders vinkel är väldigt pålitlig
-                0, 0.1, 0, 0;         % encoders hastighet, bra men lite brusig
+                0, 0.01, 0, 0;         % encoders hastighet, bra men lite brusig
                 0, 0, 0.01, 0;          % IMU vinkel, mer brusig
-                0, 0, 0, 0.001];         % IMU hastighet
+                0, 0, 0, 0.05];         % IMU hastighet
         end
 
         function xpred = predict(obj)
@@ -46,7 +46,5 @@ classdef KalmanFilter < handle
             obj.P = (I - K * obj.H) * obj.P;
             xupd = obj.x; % Store the updated state
         end
-
-
     end
 end
