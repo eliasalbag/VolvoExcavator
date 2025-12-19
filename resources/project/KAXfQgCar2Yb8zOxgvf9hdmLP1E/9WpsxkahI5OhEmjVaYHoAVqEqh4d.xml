@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Info File="lookupTable/Boom_Vel_LUT.mat" GroupUUID="default" Icon="" Name="Boom_Vel_LUT" Type="StartUp" Visible="0">
+    <Extension Name="StartUpPrev" Value="ad678987-90cd-4b23-a893-082b7e4abe16"/>
+</Info>

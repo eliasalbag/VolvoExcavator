@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Info File="lookupTable/Stick_Vel_LUT.mat" GroupUUID="default" Icon="" Name="Stick_Vel_LUT" Type="StartUp" Visible="0">
+    <Extension Name="StartUpPrev" Value="52763345-b6e5-4a6c-921c-847a89462040"/>
+</Info>

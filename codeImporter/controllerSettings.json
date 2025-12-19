@@ -1,0 +1,261 @@
+{
+  "SimulinkCodeImporterVersion": 1,
+  "LibraryFileName": "controller2DOF",
+  "OutputFolder": "/home/eliasalbag/VolvoExcavator/scripts",
+  "CustomCode": {
+    "SourceFiles": "./controller2DOF.py",
+    "GlobalVariableInterface": false
+  },
+  "Options": {
+    "CreateTestHarness": false
+  },
+  "FunctionsToImport": "controller2DOF.main",
+  "FunctionSettings": [
+    {
+      "Name": "controller2DOF.differential_inverse_kinematics",
+      "PortSpecArray": [
+        {
+          "ArgName": "y",
+          "PortName": "y",
+          "Scope": "Output",
+          "Index": "1",
+          "Type": "double",
+          "Size": "[1 1]",
+          "IsGlobal": false
+        },
+        {
+          "ArgName": "theta1",
+          "PortName": "theta1",
+          "Scope": "Input",
+          "Index": "1",
+          "Type": "double",
+          "Size": "[1 1]",
+          "IsGlobal": false
+        },
+        {
+          "ArgName": "theta2",
+          "PortName": "theta2",
+          "Scope": "Input",
+          "Index": "2",
+          "Type": "double",
+          "Size": "[1 1]",
+          "IsGlobal": false
+        },
+        {
+          "ArgName": "xdot_ref",
+          "PortName": "xdot_ref",
+          "Scope": "Input",
+          "Index": "3",
+          "Type": "double",
+          "Size": "[1 1]",
+          "IsGlobal": false
+        },
+        {
+          "ArgName": "ydot_ref",
+          "PortName": "ydot_ref",
+          "Scope": "Input",
+          "Index": "4",
+          "Type": "double",
+          "Size": "[1 1]",
+          "IsGlobal": false
+        }
+      ],
+      "IsDeterministic": false
+    },
+    {
+      "Name": "controller2DOF.jacobian",
+      "PortSpecArray": [
+        {
+          "ArgName": "y",
+          "PortName": "y",
+          "Scope": "Output",
+          "Index": "1",
+          "Type": "double",
+          "Size": "[1 1]",
+          "IsGlobal": false
+        },
+        {
+          "ArgName": "theta1",
+          "PortName": "theta1",
+          "Scope": "Input",
+          "Index": "1",
+          "Type": "double",
+          "Size": "[1 1]",
+          "IsGlobal": false
+        },
+        {
+          "ArgName": "theta2",
+          "PortName": "theta2",
+          "Scope": "Input",
+          "Index": "2",
+          "Type": "double",
+          "Size": "[1 1]",
+          "IsGlobal": false
+        }
+      ],
+      "IsDeterministic": false
+    },
+    {
+      "Name": "controller2DOF.joystick_input_to_speed",
+      "PortSpecArray": [
+        {
+          "ArgName": "y",
+          "PortName": "y",
+          "Scope": "Output",
+          "Index": "1",
+          "Type": "double",
+          "Size": "[1 1]",
+          "IsGlobal": false
+        },
+        {
+          "ArgName": "ref_norm",
+          "PortName": "ref_norm",
+          "Scope": "Input",
+          "Index": "1",
+          "Type": "double",
+          "Size": "[1 1]",
+          "IsGlobal": false
+        },
+        {
+          "ArgName": "v_max",
+          "PortName": "v_max",
+          "Scope": "Input",
+          "Index": "2",
+          "Type": "double",
+          "Size": "[1 1]",
+          "IsGlobal": false
+        }
+      ],
+      "IsDeterministic": false
+    },
+    {
+      "Name": "controller2DOF.joystick_to_velocity_axis_locked",
+      "PortSpecArray": [
+        {
+          "ArgName": "y",
+          "PortName": "y",
+          "Scope": "Output",
+          "Index": "1",
+          "Type": "double",
+          "Size": "[1 1]",
+          "IsGlobal": false
+        },
+        {
+          "ArgName": "x_norm",
+          "PortName": "x_norm",
+          "Scope": "Input",
+          "Index": "1",
+          "Type": "double",
+          "Size": "[1 1]",
+          "IsGlobal": false
+        },
+        {
+          "ArgName": "y_norm",
+          "PortName": "y_norm",
+          "Scope": "Input",
+          "Index": "2",
+          "Type": "double",
+          "Size": "[1 1]",
+          "IsGlobal": false
+        }
+      ],
+      "IsDeterministic": false
+    },
+    {
+      "Name": "controller2DOF.main",
+      "PortSpecArray": [
+        {
+          "ArgName": "theta1_dot_ref",
+          "PortName": "theta1_dot_ref",
+          "Scope": "Output",
+          "Index": "1",
+          "Type": "double",
+          "Size": "[1 1]",
+          "IsGlobal": false
+        },
+        {
+          "ArgName": "theta2_dot_ref",
+          "PortName": "theta2_dot_ref",
+          "Scope": "Output",
+          "Index": "2",
+          "Type": "double",
+          "Size": "[1 1]",
+          "IsGlobal": false
+        },
+        {
+          "ArgName": "valve_cmd_1",
+          "PortName": "valve_cmd_1",
+          "Scope": "Output",
+          "Index": "3",
+          "Type": "double",
+          "Size": "[1 1]",
+          "IsGlobal": false
+        },
+        {
+          "ArgName": "valve_cmd_2",
+          "PortName": "valve_cmd_2",
+          "Scope": "Output",
+          "Index": "4",
+          "Type": "double",
+          "Size": "[1 1]",
+          "IsGlobal": false
+        },
+        {
+          "ArgName": "x_norm",
+          "PortName": "x_norm",
+          "Scope": "Input",
+          "Index": "1",
+          "Type": "double",
+          "Size": "[1 1]",
+          "IsGlobal": false
+        },
+        {
+          "ArgName": "y_norm",
+          "PortName": "y_norm",
+          "Scope": "Input",
+          "Index": "2",
+          "Type": "double",
+          "Size": "[1 1]",
+          "IsGlobal": false
+        },
+        {
+          "ArgName": "theta1",
+          "PortName": "theta1",
+          "Scope": "Input",
+          "Index": "3",
+          "Type": "double",
+          "Size": "[1 1]",
+          "IsGlobal": false
+        },
+        {
+          "ArgName": "theta2",
+          "PortName": "theta2",
+          "Scope": "Input",
+          "Index": "4",
+          "Type": "double",
+          "Size": "[1 1]",
+          "IsGlobal": false
+        },
+        {
+          "ArgName": "max_joint_vel1",
+          "PortName": "max_joint_vel1",
+          "Scope": "Parameter",
+          "Index": "5",
+          "Type": "double",
+          "Size": "[1 1]",
+          "IsGlobal": false
+        },
+        {
+          "ArgName": "max_joint_vel2",
+          "PortName": "max_joint_vel2",
+          "Scope": "Parameter",
+          "Index": "6",
+          "Type": "double",
+          "Size": "[1 1]",
+          "IsGlobal": false
+        }
+      ],
+      "IsDeterministic": false
+    }
+  ]
+}
