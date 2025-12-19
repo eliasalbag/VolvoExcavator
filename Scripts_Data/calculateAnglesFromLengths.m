@@ -31,9 +31,6 @@ theta_b = rad2deg(acos(numB/denB)) - theta_hbc - theta_abg
 theta_c = -(theta_a + theta_b) - 180
 
 
-
-
-
 % 
 % newTheta_a = 32.746
 % 
