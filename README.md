@@ -1,13 +1,24 @@
-Excavator Control System
-A custom control system designed for Volvo excavators, enabling advanced automation and remote operation.
+# Volvo Excavator
+A custom control system designed for Volvo excavator EC20E, enabling simplified and remote operation.
 
-📌 Overview
-This project provides a programmable control interface for Volvo excavators, allowing operators or developers to:
+Open ./VolvoExcavator.prj to load project parameters
 
-Control motion and hydraulic systems via software
+## master.slx
+Matlab 2025a
+Dependant on ./lookupTable/, ./Scripts_Data/Excavator_Parameters.m
+Uses ./velocity_controller/ for control
 
-Interface with onboard sensors (e.g., GPS, IMU)
+CAN via kvaser needs to be setup on startup -- **Choose correct device in CAN configuration blocks**
 
-Enable semi-autonomous operations
+### Encoder calibration with ./Scripts_Data/calculateAnglesFromLengths.m
+Measure distance between hydraulic links, read encoder data. Use this to calculate the calibration offset for ./master.slx/CalibrationOffsets[1,2,3]
+See ./notation.gif for link notation
 
-Built for real-world deployment and testing on actual Volvo excavators.
+## ./models/SimExcavator.slx
+Matlab 2025a
+Dependant on ./Scripts_Data/Excavator_Parameters.m
+Hydraulic simulation system. For proof-of-concept controller testing. 
+
+
+## Neural Network
+See ./neural_network/readme.md

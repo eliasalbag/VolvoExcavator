@@ -1,0 +1,11 @@
+# Position Controller
+-------------------------
+
+Using an velocity reference handler could improve performance
+
+position_controller.py for use with point_planner.py
+
+Built to be used in Matlab/Simulink python code-blocks.
+Written outside of Simulink for the convenience of a real IDE.
+
+Niklas Nyberg, niknyb@kth.se

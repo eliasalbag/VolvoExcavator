@@ -1,3 +1,5 @@
+import numpy as np
+from numpy import sign
 """
 Reference handler for velocity controller.
 
@@ -10,10 +12,10 @@ flag: persistent
 """
 
 # stick tolerance depending on expected noise level of joystick
-stick_tolerance = 0.1
+stick_tolerance = 0.01
 
 # desired reference change in m/s when stick is fully deflected
-meterspersec = 0.05
+meterspersec = np.abs(stick_signal)
 Ts = 0.01
 
 ############################################################################
@@ -39,3 +41,5 @@ if stick_signal == 0 and flag == 0:
 if stick_signal != 0:
         flag = 0
         y_ref += sign(stick_signal) * meterspersec * Ts 
+
+y_ref_out = y_ref
